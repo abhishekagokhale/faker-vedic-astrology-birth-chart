@@ -21,7 +21,7 @@ jobs:
     name: uv.lock is up to date
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
       - name: Check uv.lock matches pyproject.toml
         run: uv lock --check
@@ -31,7 +31,7 @@ jobs:
     needs: lock
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.13"
@@ -53,7 +53,7 @@ jobs:
           - { version: "3.13", toxenv: py313 }
           - { version: "3.14", toxenv: py314 }
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python.version }}
@@ -72,7 +72,7 @@ jobs:
           - { name: lowest, python: "3.11" }
           - { name: latest, python: "3.14" }
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.env.python }}
@@ -85,7 +85,7 @@ jobs:
     needs: lock
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.13"
@@ -109,7 +109,7 @@ jobs:
           validate_birth_chart(chart, constrain_inner_planets=True)
           print(chart)
           PY
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
