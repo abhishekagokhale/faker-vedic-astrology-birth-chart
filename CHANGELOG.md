@@ -7,6 +7,24 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Development environment managed with uv: `uv.lock` pins every development
+  tool to exact, hash-verified versions for all platforms and Python versions.
+- tox uses tox-uv and installs from `uv.lock`, so local runs and CI use
+  identical tool versions.
+- Pre-commit runs Ruff and mypy from `uv.lock` and checks the lock is current.
+- Dependabot now updates `uv.lock` (Faker's lower bound is excluded).
+- Publishing to PyPI now requires the full CI workflow to pass first.
+
+### Added
+
+- `lowest` tox environment and CI job: tests with the oldest dependency
+  versions `pyproject.toml` allows.
+- `latest` tox environment and CI job: tests with the newest releases,
+  ignoring `uv.lock`.
+- `.python-version` (3.13) for the default development interpreter.
+
 ## [0.1.0] - 2026-11-22
 
 ### Added
