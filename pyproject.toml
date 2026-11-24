@@ -1,0 +1,149 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "faker-vedic-astrology-birth-chart"
+version = "0.1.0"
+description = "Faker community provider generating synthetic Vedic astrology birth charts for testing and development."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Abhishek Gokhale" }]
+keywords = ["faker", "faker-provider", "vedic-astrology", "jyotish", "synthetic-data", "test-data"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Testing :: Mocking",
+    "Typing :: Typed",
+]
+dependencies = ["Faker>=30.0"]
+
+[project.urls]
+Homepage = "https://github.com/abhishekagokhale/faker-vedic-astrology-birth-chart"
+Source = "https://github.com/abhishekagokhale/faker-vedic-astrology-birth-chart"
+Issues = "https://github.com/abhishekagokhale/faker-vedic-astrology-birth-chart/issues"
+Changelog = "https://github.com/abhishekagokhale/faker-vedic-astrology-birth-chart/blob/main/CHANGELOG.md"
+
+# Development-only dependencies (PEP 735). Not published with the package.
+# Exact versions (with hashes) are pinned in uv.lock; run `uv sync` to install them.
+[dependency-groups]
+test = ["pytest>=8.0", "pytest-cov>=5.0"]
+lint = ["ruff>=0.8"]
+type = ["mypy>=1.13", "pytest>=8.0"]
+release = ["build>=1.2", "twine>=6.1"]
+tox = ["tox>=4.40", "tox-uv>=1.34"]
+dev = [
+    { include-group = "test" },
+    { include-group = "lint" },
+    { include-group = "type" },
+    { include-group = "release" },
+    { include-group = "tox" },
+    "pre-commit>=4.0",
+]
+
+[tool.uv]
+# Oldest uv that every contributor and CI job should use, so uv.lock is
+# always written in the same format.
+required-version = ">=0.9"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/faker_vedic_astrology_birth_chart"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src",
+    "tests",
+    "README.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "tox.ini",
+    "uv.lock",
+    ".python-version",
+]
+
+# ---------------------------------------------------------------------------
+# pytest and coverage
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests", "src"]
+pythonpath = ["."]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--doctest-modules", "--import-mode=importlib"]
+markers = ["e2e: end-to-end tests that run the installed package in a fresh interpreter"]
+xfail_strict = true
+# Turn warnings raised by this package into errors, without failing on
+# third-party deprecation warnings we cannot fix.
+filterwarnings = ["error:::faker_vedic_astrology_birth_chart"]
+
+[tool.coverage.run]
+branch = true
+source = ["faker_vedic_astrology_birth_chart"]
+
+[tool.coverage.paths]
+source = ["src/faker_vedic_astrology_birth_chart", "*/site-packages/faker_vedic_astrology_birth_chart"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 95
+exclude_also = ["if TYPE_CHECKING:"]
+
+# ---------------------------------------------------------------------------
+# Ruff (lint + format)
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "B",        # bugbear
+    "C4",       # comprehensions
+    "D",        # pydocstyle (NumPy convention below)
+    "N",        # pep8-naming
+    "UP",       # pyupgrade
+    "SIM",      # simplify
+    "PT",       # pytest style
+    "RUF",      # ruff-specific
+    "PL",       # pylint
+    "ANN",      # type annotations
+]
+ignore = [
+    "PLR2004",  # magic values are clearer than named constants in tests and boundary checks
+    "PLR0913",  # provider methods mirror Faker's keyword style
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "PLC0415"]
+"tests/e2e/test_readme.py" = ["S102"]
+
+# ---------------------------------------------------------------------------
+# mypy
+# ---------------------------------------------------------------------------
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+files = ["src", "tests"]
+mypy_path = "src"

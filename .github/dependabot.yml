@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Keeps uv.lock (and the dev tool ranges in pyproject.toml) up to date.
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      python-dev-tools:
+        patterns: ["*"]
+    ignore:
+      # Dependabot's uv support always raises the lower bound in
+      # pyproject.toml, which would silently drop support for older Faker
+      # releases. Faker is a runtime dependency of a library, so its lower
+      # bound is changed by hand. The CI "latest" job already tests the
+      # newest Faker; refresh the lock with: uv lock --upgrade-package faker
+      - dependency-name: faker

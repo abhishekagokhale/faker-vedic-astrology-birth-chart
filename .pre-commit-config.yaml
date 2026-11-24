@@ -1,0 +1,43 @@
+# Install once with:   uv run pre-commit install
+# Run on everything:   uv run pre-commit run --all-files
+#
+# Ruff and mypy run through `uv run --locked`, so the hooks use exactly the
+# versions pinned in uv.lock - the same ones tox and CI use.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+
+  - repo: local
+    hooks:
+      - id: uv-lock-check
+        name: uv.lock is up to date with pyproject.toml
+        entry: uv lock --check
+        language: system
+        files: ^(pyproject\.toml|uv\.lock)$
+        pass_filenames: false
+
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --locked ruff check --fix
+        language: system
+        types: [python]
+
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --locked ruff format
+        language: system
+        types: [python]
+
+      - id: mypy
+        name: mypy (strict)
+        entry: uv run --locked mypy
+        language: system
+        types: [python]
+        pass_filenames: false
