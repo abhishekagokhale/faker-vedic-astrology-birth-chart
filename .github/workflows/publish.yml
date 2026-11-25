@@ -30,18 +30,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
+      - name: Install Poetry
+        run: pipx install "poetry>=2.2,<3"
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
+          cache: poetry
       - name: Check the tag matches the package version
         if: github.event_name == 'release'
         run: |
-          version=$(uv run --no-project python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
           test "v${version}" = "${GITHUB_REF_NAME}" || { echo "Tag ${GITHUB_REF_NAME} does not match version ${version}"; exit 1; }
       - name: Build and check
         run: |
-          uv build
-          uv run --locked --only-group release twine check --strict dist/*
+          poetry sync --only release --no-root
+          poetry run python -m build
+          poetry run twine check --strict dist/*
       - uses: actions/upload-artifact@v7
         with:
           name: dist

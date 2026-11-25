@@ -175,17 +175,17 @@ payload = json.dumps(charts)  # charts are plain dicts, so they serialise direct
 
 ## Development
 
-The development environment is managed with [uv](https://docs.astral.sh/uv/).
-Exact versions of every tool, with hashes, are pinned in `uv.lock`. See
-[CONTRIBUTING.md](CONTRIBUTING.md) for full details. In short:
+The development environment is managed with [Poetry](https://python-poetry.org/)
+(2.2 or later). Exact versions of every tool, with hashes, are pinned in
+`poetry.lock`. See [CONTRIBUTING.md](CONTRIBUTING.md) for full details. In short:
 
 ```bash
-uv sync                        # create .venv with Python 3.13 and the locked dev tools
-uv run pre-commit install      # optional: run checks on every commit
+poetry sync                      # create the environment with the locked dev tools
+poetry run pre-commit install    # optional: run checks on every commit
 
-uv run pytest                  # run the tests in .venv
-uv run tox                     # every Python version + lowest/latest deps + lint + type + package checks
-uv run tox -e py313            # tests on one version
+poetry run pytest                # run the tests
+poetry run tox                   # every Python version + lowest/latest deps + lint + type + package checks
+poetry run tox -e py313          # tests on one version
 ```
 
 ## Licence

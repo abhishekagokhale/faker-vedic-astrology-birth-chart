@@ -13,18 +13,26 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    # bash on every OS (Git Bash on Windows), so steps like "$POETRY_SPEC" work everywhere.
+    shell: bash
+
 env:
   FORCE_COLOR: "1"
+  # Poetry 2.2+ is needed for PEP 735 dependency groups (see pyproject.toml).
+  POETRY_SPEC: "poetry>=2.2,<3"
 
 jobs:
   lock:
-    name: uv.lock is up to date
+    name: poetry.lock is up to date
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
-      - name: Check uv.lock matches pyproject.toml
-        run: uv lock --check
+      - name: Install Poetry
+        run: pipx install "$POETRY_SPEC"
+      - name: Check poetry.lock matches pyproject.toml
+        run: poetry check --lock
 
   static-checks:
     name: Lint and type-check
@@ -32,12 +40,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
+      - name: Install Poetry
+        run: pipx install "$POETRY_SPEC"
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
-          enable-cache: true
+          cache: poetry
+      - name: Install tox from poetry.lock
+        run: poetry sync --only tox --no-root
       - name: Ruff (lint + format) and mypy (strict)
-        run: uv run --locked --only-group tox tox -e lint,type
+        run: poetry run tox -e lint,type
 
   tests:
     name: Tests (Python ${{ matrix.python.version }}, ${{ matrix.os }})
@@ -54,12 +66,16 @@ jobs:
           - { version: "3.14", toxenv: py314 }
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
+      - name: Install Poetry
+        run: pipx install "$POETRY_SPEC"
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python.version }}
-          enable-cache: true
+          cache: poetry
+      - name: Install tox from poetry.lock
+        run: poetry sync --only tox --no-root
       - name: Run tests with locked dependencies
-        run: uv run --locked --only-group tox tox -e ${{ matrix.python.toxenv }}
+        run: poetry run tox -e ${{ matrix.python.toxenv }}
 
   dependency-range:
     name: Tests with ${{ matrix.env.name }} dependencies
@@ -73,12 +89,16 @@ jobs:
           - { name: latest, python: "3.14" }
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
+      - name: Install Poetry
+        run: pipx install "$POETRY_SPEC"
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.env.python }}
-          enable-cache: true
-      - name: Run tests ignoring uv.lock
-        run: uv run --locked --only-group tox tox -e ${{ matrix.env.name }}
+          cache: poetry
+      - name: Install tox from poetry.lock
+        run: poetry sync --only tox --no-root
+      - name: Run tests ignoring poetry.lock
+        run: poetry run tox -e ${{ matrix.env.name }}
 
   package:
     name: Build and smoke-test the distribution
@@ -86,18 +106,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
+      - name: Install Poetry
+        run: pipx install "$POETRY_SPEC"
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
-          enable-cache: true
+          cache: poetry
+      - name: Install build tools from poetry.lock
+        run: poetry sync --only release --no-root
       - name: Build sdist and wheel
-        run: uv build
+        run: poetry run python -m build
       - name: Check metadata is valid for PyPI
-        run: uv run --locked --only-group release twine check --strict dist/*
+        run: poetry run twine check --strict dist/*
       - name: Install the wheel into a clean virtual environment and use it
         run: |
-          uv venv /tmp/smoke
-          uv pip install --python /tmp/smoke/bin/python dist/*.whl
+          python -m venv /tmp/smoke
+          /tmp/smoke/bin/python -m pip install dist/*.whl
           cd /tmp
           /tmp/smoke/bin/python - <<'PY'
           from faker import Faker
